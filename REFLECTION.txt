@@ -1,0 +1,17 @@
+ONE-PAGE REFLECTION - Finance AI Agent
+Akshat Jain
+
+WHAT I BUILT
+A small agent that reviews manual journal adjustments. Three rules decide whether an entry is valid or quarantined for human review: debits must equal credits, account codes must exist in the chart of accounts, and intercompany entries must not be circular. An LLM agent sits on top so a user can ask questions in plain English and get readable explanations. It runs in the terminal and as a small Flask web app.
+
+HOW I THOUGHT ABOUT IT
+My main decision was to keep the finance logic out of the model. In accounting, a wrong number or an invented account code is worse than no answer, so the rules are plain Python and the model only calls them and explains the output. The agent has one read-only tool and a prompt that forbids modifying or posting transactions and inventing account codes or values. The worst case is a poor explanation, never a bad posting. I used temperature 0 so answers stay consistent between runs.
+
+WHAT IS WEAK
+The balance check compares floating-point sums with equality, so a balanced entry could be flagged because of rounding. Decimal would fix that. The circular-entry check is a simple heuristic: it only looks for the word "intercompany" and a single account, whereas real circularity spans several entities and entries. The same rules are written in both main.py and server.py, so they could drift apart. I have not added tests, checks for duplicates or closed periods, authentication, or an approval workflow. The LLM's wording is not guaranteed to match the tool output exactly.
+
+WHAT I WOULD DO WITH MORE TIME
+Move the rules into one module and use Decimal, add unit tests and an evaluation set of tricky entries, build graph-based intercompany cycle detection, add rules for duplicates, periods and thresholds, require the agent to cite entry IDs in structured output, and add an approve/reject flow with an audit trail and logging of every tool call.
+
+WHAT I LEARNED
+Where the boundary sits between deterministic code and an LLM matters more than which model I use. Getting that boundary right is what makes an AI tool trustworthy in finance.
